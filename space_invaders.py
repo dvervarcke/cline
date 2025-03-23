@@ -4,7 +4,7 @@ import sys
 import os
 from pygame.locals import *
 
-# Initialize pygame vs 4
+# Initialize pygame vs 5
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()  # Initialize sound mixer
