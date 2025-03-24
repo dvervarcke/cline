@@ -3,7 +3,7 @@ import math
 import sys
 from pygame.locals import *
 
-# Initialize pygame
+# Initialize pygame2
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()  # Initialize sound mixer
