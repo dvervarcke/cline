@@ -1,34 +1,41 @@
 # Project Brief
 
 ## Overview
-The Cline project involves building a sales fact table for a data warehouse. This fact table will store and organize sales transaction data to support reporting and analysis needs.
+The Doom Python project involves creating a simplified version of the classic first-person shooter game Doom using Python and the Pygame library. This implementation will focus on capturing the core gameplay elements and visual style of the original game while being built entirely in Python.
 
 ## Core Requirements
-- Load sales data into the fact table within 60 minutes of transaction
-- Ensure data accuracy and integrity
-- Support accounting department's reporting needs
+- Create a playable first-person shooter game inspired by Doom
+- Implement 3D-like rendering using raycasting techniques
+- Include basic enemy AI and combat mechanics
+- Provide smooth player movement and interaction with the environment
+- Create a level system with increasing difficulty
 
 ## Goals
-- Create an efficient and reliable sales fact table
-- Minimize data latency (60 minutes or less)
-- Provide a foundation for future analytical capabilities
+- Develop a functional and entertaining game that captures the essence of Doom
+- Implement efficient rendering techniques for smooth gameplay
+- Create an immersive game environment with appropriate visuals and sound effects
+- Provide a challenging but fair gameplay experience
 
 ## Scope
-- In scope: Sales transaction data
-- In scope: ETL processes for sales data
-- Out of scope: Other business domains (inventory, customer, etc.)
-- Out of scope: Advanced analytics and reporting tools
+- In scope: First-person perspective gameplay
+- In scope: Raycasting rendering engine
+- In scope: Basic enemy AI and combat
+- In scope: Level design and progression
+- In scope: Sound effects and basic music
+- Out of scope: Multiplayer functionality
+- Out of scope: Advanced 3D graphics and effects
+- Out of scope: Level editor
 
 ## Timeline
-- Project completion: 60 days from initiation
+- Project completion: Flexible, based on development progress
 - Detailed milestones to be determined
 
 ## Stakeholders
-- Accounting Department: Primary users of the data
-- Data Engineering Team: Implementation team
-- Business Intelligence Team: Secondary users for reporting
+- Game Developer: Implementation and design
+- Players: End users of the game
 
 ## Success Criteria
-- Sales data available in fact table within 60 minutes of transaction
-- Data accuracy verified through reconciliation processes
-- Accounting department able to generate required reports
+- Game runs smoothly at a minimum of 30 FPS on standard hardware
+- Player can navigate levels, combat enemies, and progress through the game
+- Game captures the core aesthetic and gameplay feel of the original Doom
+- Controls are responsive and intuitive

@@ -1,41 +1,49 @@
 # Cline Rules
 
 ## Project Patterns
-- [Pattern 1]: [Description, usage]
-- [Pattern 2]: [Description, usage]
-- [Pattern 3]: [Description, usage]
+- Raycasting Implementation: Use DDA algorithm for efficient ray calculations
+- Component Organization: Each major game component should be in its own module
+- Game Loop: Follow the standard update-render cycle pattern
+- State Management: Use explicit state objects for different game states
 
 ## User Preferences
-- [Preference 1]: [Description]
-- [Preference 2]: [Description]
-- [Preference 3]: [Description]
+- Code Style: Follow PEP 8 guidelines for Python code
+- Documentation: Include docstrings for all classes and functions
+- Comments: Add explanatory comments for complex algorithms, especially in the raycasting engine
+- Variable Naming: Use descriptive names that reflect purpose (e.g., player_position, wall_height)
 
 ## Critical Implementation Paths
-- [Path 1]: [Description, considerations]
-- [Path 2]: [Description, considerations]
-- [Path 3]: [Description, considerations]
+- Raycasting Engine: Core rendering system that creates the 3D-like view
+- Player Movement: WASD keys for movement, mouse for rotation/aiming
+- Collision Detection: Grid-based collision system using the map layout
+- Enemy AI: State-based behavior patterns for different enemy types
 
 ## Known Challenges
-- [Challenge 1]: [Workarounds, solutions]
-- [Challenge 2]: [Workarounds, solutions]
-- [Challenge 3]: [Workarounds, solutions]
+- Performance: Optimize raycasting calculations for smooth frame rates
+- Texture Mapping: Implement proper perspective correction for wall textures
+- Sprite Rendering: Sort sprites by distance for correct rendering order
+- Python Limitations: Be mindful of Python's performance constraints for real-time rendering
 
 ## Project Decision Evolution
-- [Decision 1]: [Initial approach, current approach, rationale]
-- [Decision 2]: [Initial approach, current approach, rationale]
-- [Decision 3]: [Initial approach, current approach, rationale]
+- Rendering Approach: Chose raycasting over true 3D for simplicity and performance
+- Map Representation: Decided on a 2D grid with numeric values for different wall types
+- Game Architecture: Adopted component-based design for modularity and maintainability
+- Input Handling: Selected keyboard and mouse combination for intuitive controls
 
 ## Tool Usage Patterns
-- [Tool 1]: [Usage pattern, best practices]
-- [Tool 2]: [Usage pattern, best practices]
-- [Tool 3]: [Usage pattern, best practices]
+- Pygame: Used for window management, input handling, and rendering
+- NumPy: Optional for optimizing mathematical calculations
+- Testing: Manual gameplay testing for most features
+- Version Control: Regular commits with descriptive messages
 
 ## Workflow Optimizations
-- [Optimization 1]: [Description, benefit]
-- [Optimization 2]: [Description, benefit]
-- [Optimization 3]: [Description, benefit]
+- Incremental Development: Build one component at a time, testing thoroughly
+- Performance Profiling: Regular checks to identify and address bottlenecks
+- Modular Testing: Test individual components before integration
+- Reference Material: Consult original Doom mechanics for authentic implementation
 
 ## Learning Journal
-- [Date]: [Insight, application]
-- [Date]: [Insight, application]
-- [Date]: [Insight, application]
+- Initial Setup: Created Memory Bank documentation to define project scope and architecture
+- Raycasting Research: Studied DDA algorithm and its implementation in Python
+- Pygame Patterns: Analyzed existing Space Invaders implementation for Pygame usage patterns
+- Game Architecture: Designed component-based structure for maintainability and extensibility

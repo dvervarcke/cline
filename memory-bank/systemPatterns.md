@@ -1,48 +1,66 @@
 # System Patterns
 
 ## Architecture Overview
-The Cline project implements a modern data warehouse architecture using Snowflake as the primary data warehouse platform. The architecture follows a standard extract, transform, load (ETL) pattern using dbt (data build tool) for transformation logic. The data model follows a star schema design with the sales fact table at the center.
+The Python Doom implementation follows a component-based game architecture using Pygame as the primary framework. The system is organized around a main game loop that handles rendering, input processing, game state updates, and collision detection. The rendering engine uses raycasting techniques to create a 3D-like environment from a 2D map.
 
 ## Key Components
-- Azure Data Lake Storage (ADLS): Source data storage containing sales files
-- Snowflake: Cloud data warehouse platform hosting the sales fact table
-- dbt: Data transformation tool for building and maintaining the data models
-- Sales Fact Table: Central fact table containing sales transaction data
-- Dimension Tables: Supporting tables for contextual data (products, customers, time, etc.)
+- Game Engine: Core game loop and state management
+- Raycasting Engine: 3D-like rendering system
+- Map System: Level layout and environment data
+- Player Controller: Handles player movement and actions
+- Enemy AI: Controls enemy behavior and pathfinding
+- Weapon System: Manages weapons, ammunition, and combat
+- Sound Manager: Handles sound effects and music
+- Collision System: Detects and resolves collisions
+- UI Manager: Renders HUD and menus
 
 ## Component Relationships
 ```mermaid
 flowchart TD
-    A[Source Files in ADLS] --> B[Snowflake Raw Layer]
-    B --> C[dbt Transformation]
-    C --> D[Sales Fact Table]
-    C --> E[Dimension Tables]
-    D --> F[Reporting Dashboards]
-    E --> F
+    A[Game Engine] --> B[Raycasting Engine]
+    A --> C[Player Controller]
+    A --> D[Enemy AI]
+    A --> E[Map System]
+    A --> F[Weapon System]
+    A --> G[Sound Manager]
+    A --> H[Collision System]
+    A --> I[UI Manager]
+    
+    B --> E
+    C --> F
+    C --> H
+    D --> H
+    D --> E
+    F --> G
 ```
 
 ## Design Patterns
-- Star Schema: Used for the data model with sales fact table at the center
-- ELT (Extract, Load, Transform): Data is loaded into Snowflake before transformation
-- Incremental Loading: Updates only new or changed data to minimize processing
-- Data Vault: Potential future pattern for historical tracking
+- Game Loop Pattern: Core update-render cycle
+- Component Pattern: Modular game elements with specific responsibilities
+- State Pattern: Managing game states (playing, paused, menu, etc.)
+- Observer Pattern: Event handling for game events
+- Factory Pattern: Creating enemies and game objects
+- Singleton Pattern: For managers like sound and input
 
 ## Data Flow
-Source sales data is stored as files in Azure Data Lake Storage. These files are loaded into Snowflake's raw data layer. dbt processes then transform this raw data into a properly modeled sales fact table and associated dimension tables following the star schema pattern. The goal is to complete this process within 60 minutes of the original transaction to meet the near real-time requirement.
+The game loop processes input from the player, updates the game state including player and enemy positions, checks for collisions, resolves combat, and renders the updated state to the screen. The raycasting engine takes the current player position and orientation along with the map data to render the 3D-like view of the environment.
 
 ## Key Technical Decisions
-- Snowflake as data warehouse (pending final approval): Scalable, cloud-native solution
-- dbt for transformations: Enables version-controlled, testable data transformations
-- Star schema for data modeling: Optimized for analytical queries
-- 60-minute refresh window: Balance between timeliness and system load
+- Pygame for window management, input handling, and rendering
+- Raycasting for 3D-like rendering instead of true 3D graphics
+- Grid-based map system for simplified collision detection
+- Component-based architecture for modularity and extensibility
+- Sprite-based rendering for enemies and objects
 
 ## System Constraints
-- 60-minute data freshness requirement
-- Dependency on source file availability in ADLS
-- Need to maintain data consistency during transformations
+- Performance limitations of Python for real-time rendering
+- Pygame's 2D rendering capabilities
+- Simplified physics for better performance
+- Limited AI complexity to maintain frame rate
 
 ## Future Architecture Considerations
-- Near real-time or streaming data ingestion
-- Expansion to include additional business domains
-- Advanced analytics capabilities
-- Data quality monitoring framework
+- Potential optimization using Cython or Numba for performance-critical sections
+- More sophisticated enemy AI behaviors
+- Enhanced lighting and visual effects
+- Expanded weapon and combat systems
+- Level editor for custom map creation

@@ -1,47 +1,56 @@
 # Product Context
 
 ## Purpose
-The sales fact table exists to provide near real-time sales data for reporting dashboards used by the accounting department. It serves as the central repository for sales transaction data that feeds into various reports and analytics.
+The Python Doom implementation exists to recreate the classic first-person shooter experience in a modern, accessible Python environment. It serves as both a tribute to the iconic game and a demonstration of game development techniques using Python and Pygame.
 
 ## Problem Statement
-Currently, the accounting department does not have access to timely sales reports. This delays financial decision-making and creates inefficiencies in the accounting process. The sales fact table aims to solve this by providing sales data with minimal delay (within 60 minutes of transaction).
+Many classic games like Doom are becoming less accessible on modern systems, and understanding their technical implementation can be challenging. This Python implementation aims to solve this by providing a cross-platform, open-source version that is both playable and educational, allowing users to enjoy the game while potentially learning about game development concepts.
 
 ## Target Users
-- Accounting Department: Needs timely sales data for financial reporting and analysis
-- Business Analysts: Use the data to create and maintain dashboards
-- Finance Executives: Consume reports based on the sales data
+- Retro Gaming Enthusiasts: Players who enjoy classic games and want to experience Doom on modern systems
+- Game Development Students: Those learning about game development concepts, particularly raycasting and game AI
+- Python Developers: Programmers interested in seeing complex game mechanics implemented in Python
+- Doom Fans: Players who have nostalgia for the original game and want to experience a reimagined version
 
 ## User Journeys
-1. Accounting Analyst Daily Reporting
-   - Access dashboard with near real-time sales data
-   - Generate daily sales reports
-   - Reconcile sales figures with other financial systems
-   - Make informed financial decisions based on current data
-2. Monthly Financial Close
-   - Pull comprehensive sales data for the month
-   - Generate month-end financial reports
-   - Analyze sales trends and patterns
-   - Present findings to management
+1. Casual Gaming Experience
+   - Launch the game
+   - Navigate through levels
+   - Combat enemies
+   - Complete objectives
+   - Experience the classic Doom atmosphere
+
+2. Educational Journey
+   - Examine the source code to understand raycasting implementation
+   - Study the game mechanics and AI behavior
+   - Potentially modify or extend the game
+   - Learn about game development patterns and techniques
 
 ## User Experience Goals
-- Provide reliable access to sales data with minimal delay
-- Ensure data consistency and accuracy
-- Support efficient reporting workflows
-- Reduce manual data processing time
+- Provide intuitive controls similar to the original Doom
+- Create a smooth, responsive gameplay experience
+- Capture the atmospheric tension of the original game
+- Ensure the code is readable and well-documented for educational purposes
+- Make the game accessible across different platforms
 
 ## Key Features
-- Sales data refreshed within 60 minutes of transaction
-- Comprehensive sales metrics (revenue, units sold, etc.)
-- Historical data retention for trend analysis
-- Integration with existing reporting tools and dashboards
+- First-person perspective with raycasting rendering
+- Enemy AI with different behavior patterns
+- Weapon system with multiple options
+- Level progression with increasing difficulty
+- Atmospheric sound effects and music
+- Collision detection and physics
+- Health and ammunition management
 
 ## Success Metrics
-- Data Freshness: Sales data available within 60 minutes of transaction
-- Data Accuracy: 100% reconciliation with source systems
-- System Reliability: 99.9% uptime for data access
-- User Satisfaction: Positive feedback from accounting team
+- Performance: Consistent 30+ FPS on standard hardware
+- Playability: Intuitive controls with responsive feedback
+- Authenticity: Captures the core feeling and mechanics of the original Doom
+- Code Quality: Well-structured, documented code for educational purposes
+- User Engagement: Players complete multiple levels and return to play again
 
 ## Competitive Landscape
-- Near-immediate refresh solution: Would provide even faster data but requires more complex infrastructure
-- Third-party reporting tools: Could be purchased but wouldn't integrate as seamlessly with internal systems
-- Manual reporting processes: Current state, labor-intensive and error-prone
+- Original Doom: The classic game that inspired this project
+- Other Doom source ports: Various implementations and modifications of the original game
+- Modern FPS games: Contemporary shooters with advanced graphics and mechanics
+- Other Python game implementations: Similar educational or tribute projects
