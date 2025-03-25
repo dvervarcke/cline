@@ -85,34 +85,207 @@ except:
     shoot_sound = None
     hit_sound = None
 
-# Weapon state
+# Weapon class
+class Weapon:
+    def __init__(self, name, damage, fire_rate, ammo_capacity, reload_time):
+        self.name = name
+        self.damage = damage
+        self.fire_rate = fire_rate
+        self.ammo_capacity = ammo_capacity
+        self.current_ammo = ammo_capacity
+        self.reload_time = reload_time
+        self.last_fire_time = 0
+        self.is_reloading = False
+        self.reload_start_time = 0
+        self.frames = []
+        self.current_frame = 0
+        self.animation_speed = 100  # milliseconds per frame
+        self.last_frame_update = 0
+
+    def can_fire(self, current_time):
+        return (current_time - self.last_fire_time >= self.fire_rate and 
+                not self.is_reloading and 
+                self.current_ammo > 0)
+
+    def fire(self, current_time):
+        if self.can_fire(current_time):
+            self.last_fire_time = current_time
+            self.current_ammo -= 1
+            return True
+        return False
+
+    def reload(self, current_time):
+        if not self.is_reloading and self.current_ammo < self.ammo_capacity:
+            self.is_reloading = True
+            self.reload_start_time = current_time
+            return True
+        return False
+
+    def update(self, current_time):
+        if self.is_reloading:
+            if current_time - self.reload_start_time >= self.reload_time:
+                self.current_ammo = self.ammo_capacity
+                self.is_reloading = False
+                return True
+
+        # Update weapon animation
+        if current_time - self.last_frame_update >= self.animation_speed:
+            self.last_frame_update = current_time
+            if self.current_frame < len(self.frames) - 1:
+                self.current_frame += 1
+            else:
+                self.current_frame = 0
+
+        return False
+
+# Initialize weapons
+weapons = {
+    "pistol": Weapon("Pistol", 20, 250, 12, 1000),
+    "shotgun": Weapon("Shotgun", 40, 800, 8, 1500),
+    "plasma": Weapon("Plasma", 60, 400, 50, 2000)
+}
+
+# Create weapon textures
+def create_weapon_textures():
+    for weapon in weapons.values():
+        # Create base weapon texture
+        base = pygame.Surface((100, 100), pygame.SRCALPHA)
+        pygame.draw.rect(base, (100, 100, 100), (20, 40, 60, 20))  # Handle
+        pygame.draw.rect(base, (150, 150, 150), (70, 45, 20, 10))  # Barrel
+        
+        # Add some details based on weapon type
+        if weapon.name == "Pistol":
+            pygame.draw.circle(base, (200, 200, 200), (85, 50), 5)  # Muzzle
+        elif weapon.name == "Shotgun":
+            pygame.draw.rect(base, (200, 200, 200), (75, 40, 15, 20))  # Wider barrel
+        elif weapon.name == "Plasma":
+            pygame.draw.rect(base, (0, 255, 255), (75, 45, 15, 10))  # Glowing barrel
+        
+        weapon.frames.append(base)
+        
+        # Create firing animation frame
+        fire_frame = base.copy()
+        if weapon.name == "Pistol":
+            pygame.draw.circle(fire_frame, (255, 255, 0), (90, 50), 10)  # Muzzle flash
+        elif weapon.name == "Shotgun":
+            pygame.draw.circle(fire_frame, (255, 255, 0), (95, 50), 15)  # Larger flash
+        elif weapon.name == "Plasma":
+            pygame.draw.circle(fire_frame, (0, 255, 255), (90, 50), 20)  # Plasma burst
+        
+        weapon.frames.append(fire_frame)
+
+create_weapon_textures()
+
+# Update weapon state
 weapon_state = {
     "current": "pistol",
-    "frame": 0,
     "firing": False,
     "last_fire_time": 0
 }
 
 # Enemy class
 class Enemy:
-    def __init__(self, x, y):
+    def __init__(self, x, y, enemy_type="imp"):
         self.x = x
         self.y = y
+        self.enemy_type = enemy_type
         self.size = CELL_SIZE // 2
-        self.health = 100
+        
+        # Enemy type-specific attributes
+        if enemy_type == "imp":
+            self.health = 100
+            self.speed = 2
+            self.attack_range = 200
+            self.damage = 10
+            self.attack_rate = 1000  # milliseconds
+            self.color = RED
+        elif enemy_type == "cacodemon":
+            self.health = 150
+            self.speed = 3
+            self.attack_range = 300
+            self.damage = 15
+            self.attack_rate = 800
+            self.color = (255, 0, 255)  # Purple
+        elif enemy_type == "baron":
+            self.health = 300
+            self.speed = 1.5
+            self.attack_range = 400
+            self.damage = 25
+            self.attack_rate = 1500
+            self.color = (139, 0, 0)  # Dark red
+        
         self.is_alive = True
+        self.last_attack_time = 0
         self.texture = pygame.Surface((self.size, self.size))
-        self.texture.fill(RED)
-        # Add some details to the enemy texture
-        pygame.draw.circle(self.texture, BLACK, (self.size // 3, self.size // 3), self.size // 10)
-        pygame.draw.circle(self.texture, BLACK, (2 * self.size // 3, self.size // 3), self.size // 10)
-        pygame.draw.rect(self.texture, BLACK, (self.size // 4, 2 * self.size // 3, self.size // 2, self.size // 10))
+        self.texture.fill(self.color)
+        
+        # Add enemy-specific details
+        if enemy_type == "imp":
+            # Horned imp
+            pygame.draw.circle(self.texture, BLACK, (self.size // 3, self.size // 3), self.size // 10)
+            pygame.draw.circle(self.texture, BLACK, (2 * self.size // 3, self.size // 3), self.size // 10)
+            pygame.draw.polygon(self.texture, BLACK, [
+                (self.size // 4, self.size // 4),
+                (self.size // 2, 0),
+                (3 * self.size // 4, self.size // 4)
+            ])
+        elif enemy_type == "cacodemon":
+            # Floating eye
+            pygame.draw.circle(self.texture, WHITE, (self.size // 2, self.size // 2), self.size // 3)
+            pygame.draw.circle(self.texture, BLACK, (self.size // 2, self.size // 2), self.size // 4)
+            pygame.draw.circle(self.texture, WHITE, (self.size // 2, self.size // 2), self.size // 8)
+        elif enemy_type == "baron":
+            # Horned demon
+            pygame.draw.circle(self.texture, BLACK, (self.size // 3, self.size // 3), self.size // 8)
+            pygame.draw.circle(self.texture, BLACK, (2 * self.size // 3, self.size // 3), self.size // 8)
+            pygame.draw.polygon(self.texture, BLACK, [
+                (self.size // 4, self.size // 4),
+                (self.size // 2, 0),
+                (3 * self.size // 4, self.size // 4)
+            ])
+            pygame.draw.polygon(self.texture, BLACK, [
+                (self.size // 4, self.size // 4),
+                (self.size // 2, self.size),
+                (3 * self.size // 4, self.size // 4)
+            ])
 
-# Create some enemies
+    def update(self, player_x, player_y, current_time):
+        if not self.is_alive:
+            return False
+
+        # Calculate distance to player
+        dx = player_x - self.x
+        dy = player_y - self.y
+        distance = math.sqrt(dx * dx + dy * dy)
+
+        # Move towards player if within attack range
+        if distance < self.attack_range:
+            # Normalize direction vector
+            if distance > 0:
+                dx = dx / distance * self.speed
+                dy = dy / distance * self.speed
+                self.x += dx
+                self.y += dy
+
+            # Attack if within range and cooldown is ready
+            if distance < self.size * 2 and current_time - self.last_attack_time >= self.attack_rate:
+                self.last_attack_time = current_time
+                return True  # Signal that the enemy is attacking
+
+        return False
+
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.is_alive = False
+            return True  # Enemy died
+        return False
+
+# Create enemies with different types
 enemies = [
-    Enemy(CELL_SIZE * 3.5, CELL_SIZE * 3.5),
-    Enemy(CELL_SIZE * 5.5, CELL_SIZE * 5.5),
-    Enemy(CELL_SIZE * 7.5, CELL_SIZE * 2.5)
+    Enemy(CELL_SIZE * 3.5, CELL_SIZE * 3.5, "imp"),
+    Enemy(CELL_SIZE * 5.5, CELL_SIZE * 5.5, "cacodemon"),
+    Enemy(CELL_SIZE * 7.5, CELL_SIZE * 2.5, "baron")
 ]
 
 def cast_ray(angle):
@@ -290,58 +463,66 @@ def render_enemies():
         screen.blit(scaled_sprite, (sprite_x, sprite_y))
 
 def render_weapon():
-    """Render the player's weapon."""
-    # Simple pistol rendering
-    weapon_height = SCREEN_HEIGHT // 3
-    weapon_width = weapon_height * 2 // 3
+    """Render the current weapon."""
+    current_time = pygame.time.get_ticks()
+    weapon = weapons[weapon_state["current"]]
     
-    # Weapon position (centered at bottom)
-    weapon_x = (SCREEN_WIDTH - weapon_width) // 2
-    weapon_y = SCREEN_HEIGHT - weapon_height
+    # Update weapon state
+    weapon.update(current_time)
     
-    # Create weapon surface
-    weapon = pygame.Surface((weapon_width, weapon_height), pygame.SRCALPHA)
+    # Get current weapon frame
+    frame = weapon.frames[weapon.current_frame]
     
-    # Draw pistol
-    if weapon_state["firing"] and pygame.time.get_ticks() - weapon_state["last_fire_time"] < 200:
-        # Firing animation (pistol moved up)
-        pygame.draw.rect(weapon, DARK_GRAY, (weapon_width // 3, weapon_height // 4 - 10, weapon_width // 3, weapon_height // 2))
-        pygame.draw.rect(weapon, GRAY, (weapon_width // 3 + 2, weapon_height // 4 - 8, weapon_width // 3 - 4, weapon_height // 2 - 4))
-        pygame.draw.rect(weapon, DARK_GRAY, (weapon_width // 3, weapon_height // 4 + weapon_height // 2 - 10, weapon_width // 3, weapon_height // 8))
-    else:
-        # Normal pistol position
-        pygame.draw.rect(weapon, DARK_GRAY, (weapon_width // 3, weapon_height // 4, weapon_width // 3, weapon_height // 2))
-        pygame.draw.rect(weapon, GRAY, (weapon_width // 3 + 2, weapon_height // 4 + 2, weapon_width // 3 - 4, weapon_height // 2 - 4))
-        pygame.draw.rect(weapon, DARK_GRAY, (weapon_width // 3, weapon_height // 4 + weapon_height // 2, weapon_width // 3, weapon_height // 8))
+    # Scale the weapon texture
+    scaled_weapon = pygame.transform.scale(frame, (200, 200))
+    
+    # Position the weapon at the bottom right of the screen
+    weapon_pos = (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 250)
     
     # Draw the weapon
-    screen.blit(weapon, (weapon_x, weapon_y))
+    screen.blit(scaled_weapon, weapon_pos)
     
-    # Reset firing state after animation
-    if weapon_state["firing"] and pygame.time.get_ticks() - weapon_state["last_fire_time"] >= 200:
-        weapon_state["firing"] = False
+    # Draw ammo count
+    ammo_text = f"{weapon.current_ammo}/{weapon.ammo_capacity}"
+    font = pygame.font.SysFont(None, 36)
+    text_surface = font.render(ammo_text, True, WHITE)
+    screen.blit(text_surface, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 50))
+    
+    # Draw reload indicator
+    if weapon.is_reloading:
+        reload_text = "RELOADING..."
+        text_surface = font.render(reload_text, True, RED)
+        screen.blit(text_surface, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 30))
 
 def render_hud():
     """Render the heads-up display."""
     # Draw health bar
-    health = 100  # Placeholder for player health
-    health_bar_width = 200
-    health_bar_height = 20
-    health_bar_x = 20
-    health_bar_y = SCREEN_HEIGHT - 30
+    health_width = 200
+    health_height = 20
+    health_x = 20
+    health_y = SCREEN_HEIGHT - 40
     
-    # Background
-    pygame.draw.rect(screen, DARK_GRAY, (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
-    # Health level
-    pygame.draw.rect(screen, RED, (health_bar_x, health_bar_y, health_bar_width * health // 100, health_bar_height))
-    # Border
-    pygame.draw.rect(screen, WHITE, (health_bar_x, health_bar_y, health_bar_width, health_bar_height), 1)
+    # Health bar background
+    pygame.draw.rect(screen, DARK_GRAY, (health_x, health_y, health_width, health_height))
+    # Health bar
+    health_percent = player_health / max_health
+    pygame.draw.rect(screen, RED, (health_x, health_y, health_width * health_percent, health_height))
     
-    # Draw ammo counter
-    ammo = 50  # Placeholder for ammo count
-    font = pygame.font.SysFont(None, 36)
-    ammo_text = font.render(f"AMMO: {ammo}", True, WHITE)
-    screen.blit(ammo_text, (SCREEN_WIDTH - 150, SCREEN_HEIGHT - 30))
+    # Draw armor bar
+    armor_y = health_y - 25
+    pygame.draw.rect(screen, DARK_GRAY, (health_x, armor_y, health_width, health_height))
+    armor_percent = player_armor / max_armor
+    pygame.draw.rect(screen, BLUE, (health_x, armor_y, health_width * armor_percent, health_height))
+    
+    # Draw health and armor numbers
+    health_text = f"HP: {player_health}/{max_health}"
+    armor_text = f"ARMOR: {player_armor}/{max_armor}"
+    
+    text_surface = font.render(health_text, True, WHITE)
+    screen.blit(text_surface, (health_x + health_width + 10, health_y))
+    
+    text_surface = font.render(armor_text, True, WHITE)
+    screen.blit(text_surface, (health_x + health_width + 10, armor_y))
 
 def check_collision(x, y):
     """Check if the position (x, y) collides with a wall."""
@@ -394,11 +575,7 @@ def fire_weapon():
                 
                 if ray_dist >= distance:
                     # Hit the enemy
-                    enemy.health -= 25  # Damage amount
-                    
-                    # Check if enemy is defeated
-                    if enemy.health <= 0:
-                        enemy.is_alive = False
+                    enemy.take_damage(25)  # Damage amount
                     
                     # Play hit sound
                     if hit_sound:
@@ -445,8 +622,219 @@ def render_minimap():
             enemy_map_y = map_y + (enemy.y / CELL_SIZE) * cell_size
             pygame.draw.circle(screen, RED, (int(enemy_map_x), int(enemy_map_y)), int(cell_size / 2))
 
+# Player stats
+player_health = 100
+player_armor = 0
+max_health = 100
+max_armor = 100
+
+# Power-up class
+class PowerUp:
+    def __init__(self, x, y, power_type):
+        self.x = x
+        self.y = y
+        self.power_type = power_type
+        self.size = CELL_SIZE // 2
+        self.is_active = True
+        
+        # Create power-up texture
+        self.texture = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+        
+        if power_type == "health":
+            self.value = 25
+            self.color = GREEN
+            # Draw health symbol
+            pygame.draw.circle(self.texture, self.color, (self.size // 2, self.size // 2), self.size // 2)
+            pygame.draw.circle(self.texture, WHITE, (self.size // 2, self.size // 2), self.size // 3)
+            pygame.draw.circle(self.texture, self.color, (self.size // 2, self.size // 2), self.size // 4)
+        elif power_type == "armor":
+            self.value = 25
+            self.color = BLUE
+            # Draw armor symbol
+            pygame.draw.circle(self.texture, self.color, (self.size // 2, self.size // 2), self.size // 2)
+            pygame.draw.circle(self.texture, WHITE, (self.size // 2, self.size // 2), self.size // 3)
+            pygame.draw.rect(self.texture, self.color, (self.size // 4, self.size // 4, self.size // 2, self.size // 2))
+        elif power_type == "ammo":
+            self.value = 50
+            self.color = YELLOW
+            # Draw ammo symbol
+            pygame.draw.circle(self.texture, self.color, (self.size // 2, self.size // 2), self.size // 2)
+            pygame.draw.rect(self.texture, WHITE, (self.size // 4, self.size // 4, self.size // 2, self.size // 2))
+
+# Create power-ups
+power_ups = [
+    PowerUp(CELL_SIZE * 2.5, CELL_SIZE * 2.5, "health"),
+    PowerUp(CELL_SIZE * 4.5, CELL_SIZE * 4.5, "armor"),
+    PowerUp(CELL_SIZE * 6.5, CELL_SIZE * 3.5, "ammo")
+]
+
+def check_power_up_collision():
+    global player_health, player_armor
+    
+    for power_up in power_ups:
+        if not power_up.is_active:
+            continue
+            
+        # Calculate distance to power-up
+        dx = player_x - power_up.x
+        dy = player_y - power_up.y
+        distance = math.sqrt(dx * dx + dy * dy)
+        
+        # Check if player picked up the power-up
+        if distance < CELL_SIZE:
+            if power_up.power_type == "health":
+                player_health = min(player_health + power_up.value, max_health)
+            elif power_up.power_type == "armor":
+                player_armor = min(player_armor + power_up.value, max_armor)
+            elif power_up.power_type == "ammo":
+                # Refill all weapons
+                for weapon in weapons.values():
+                    weapon.current_ammo = weapon.ammo_capacity
+            
+            power_up.is_active = False
+            # Play pickup sound (you'll need to add this)
+
+def render_power_ups():
+    for power_up in power_ups:
+        if power_up.is_active:
+            # Calculate power-up position on screen
+            dx = power_up.x - player_x
+            dy = power_up.y - player_y
+            angle = math.atan2(dy, dx) - player_angle
+            
+            # Normalize angle
+            while angle > math.pi:
+                angle -= 2 * math.pi
+            while angle < -math.pi:
+                angle += 2 * math.pi
+            
+            # Check if power-up is in view
+            if abs(angle) < HALF_FOV:
+                # Calculate distance
+                distance = math.sqrt(dx * dx + dy * dy)
+                
+                # Calculate screen position
+                screen_x = (angle + HALF_FOV) * (SCREEN_WIDTH / FOV)
+                screen_y = SCREEN_HEIGHT // 2
+                
+                # Scale power-up based on distance
+                scale = min(1.0, CELL_SIZE / distance)
+                scaled_size = int(power_up.size * scale)
+                
+                # Draw power-up
+                scaled_texture = pygame.transform.scale(power_up.texture, (scaled_size, scaled_size))
+                screen.blit(scaled_texture, (screen_x - scaled_size // 2, screen_y - scaled_size // 2))
+
 # Game state
 game_state = "playing"  # "playing", "game_over", "win"
+
+# Game variables
+score = 0
+high_score = 0
+kills = 0
+total_enemies = len(enemies)
+
+def update_score(points):
+    global score, high_score
+    score += points
+    if score > high_score:
+        high_score = score
+
+def render_game_over():
+    # Create semi-transparent overlay
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.fill(BLACK)
+    overlay.set_alpha(128)
+    screen.blit(overlay, (0, 0))
+    
+    # Game Over text
+    game_over_font = pygame.font.SysFont(None, 74)
+    game_over_text = game_over_font.render("GAME OVER", True, RED)
+    screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, SCREEN_HEIGHT // 3))
+    
+    # Stats
+    stats_font = pygame.font.SysFont(None, 36)
+    stats = [
+        f"Score: {score}",
+        f"High Score: {high_score}",
+        f"Kills: {kills}/{total_enemies}",
+        "",
+        "Press R to Restart",
+        "Press ESC to Quit"
+    ]
+    
+    for i, stat in enumerate(stats):
+        text = stats_font.render(stat, True, WHITE)
+        screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 + i * 40))
+
+def reset_game():
+    global player_health, player_armor, score, kills, game_state
+    global player_x, player_y, player_angle
+    global enemies, power_ups, weapons
+    
+    # Reset player
+    player_health = max_health
+    player_armor = 0
+    player_x = CELL_SIZE * 1.5
+    player_y = CELL_SIZE * 1.5
+    player_angle = math.pi / 4
+    
+    # Reset game state
+    score = 0
+    kills = 0
+    game_state = "playing"
+    
+    # Reset enemies
+    enemies = [
+        Enemy(CELL_SIZE * 3.5, CELL_SIZE * 3.5, "imp"),
+        Enemy(CELL_SIZE * 5.5, CELL_SIZE * 5.5, "cacodemon"),
+        Enemy(CELL_SIZE * 7.5, CELL_SIZE * 2.5, "baron")
+    ]
+    
+    # Reset power-ups
+    power_ups = [
+        PowerUp(CELL_SIZE * 2.5, CELL_SIZE * 2.5, "health"),
+        PowerUp(CELL_SIZE * 4.5, CELL_SIZE * 4.5, "armor"),
+        PowerUp(CELL_SIZE * 6.5, CELL_SIZE * 3.5, "ammo")
+    ]
+    
+    # Reset weapons
+    for weapon in weapons.values():
+        weapon.current_ammo = weapon.ammo_capacity
+        weapon.is_reloading = False
+
+# Update the main game loop to handle game over state
+def update_game_state():
+    global game_state, kills
+    
+    current_time = pygame.time.get_ticks()
+    
+    # Check for power-up collisions
+    check_power_up_collision()
+    
+    # Update enemies
+    for enemy in enemies:
+        if enemy.update(player_x, player_y, current_time):
+            # Enemy is attacking
+            damage = enemy.damage
+            # Apply armor first
+            if player_armor > 0:
+                if player_armor >= damage:
+                    player_armor -= damage
+                    damage = 0
+                else:
+                    damage -= player_armor
+                    player_armor = 0
+            # Apply remaining damage to health
+            player_health -= damage
+            if player_health <= 0:
+                return "game_over"
+    
+    # Check for win condition
+    if kills >= total_enemies:
+        return "win"
+    
+    return "playing"
 
 # Main game loop
 running = True
@@ -461,8 +849,29 @@ while running:
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
+            elif event.key == K_r and game_state in ["game_over", "win"]:
+                reset_game()
             elif event.key == K_SPACE and game_state == "playing":
-                fire_weapon()
+                current_time = pygame.time.get_ticks()
+                weapon = weapons[weapon_state["current"]]
+                if weapon.fire(current_time):
+                    weapon_state["firing"] = True
+                    weapon_state["last_fire_time"] = current_time
+                    # Play shooting sound
+                    if shoot_sound:
+                        shoot_sound.play()
+            elif event.key == K_r:
+                current_time = pygame.time.get_ticks()
+                weapon = weapons[weapon_state["current"]]
+                if weapon.reload(current_time):
+                    # Play reload sound (you'll need to add this)
+                    pass
+            elif event.key == K_1:
+                weapon_state["current"] = "pistol"
+            elif event.key == K_2:
+                weapon_state["current"] = "shotgun"
+            elif event.key == K_3:
+                weapon_state["current"] = "plasma"
         elif event.type == MOUSEBUTTONDOWN and event.button == 1 and game_state == "playing":
             fire_weapon()
     
@@ -517,34 +926,19 @@ while running:
             game_state = "win"
     
     # Render the game
-    render_walls()
-    render_enemies()
-    render_weapon()
-    render_hud()
-    render_minimap()
-    
-    # Draw game state messages
-    if game_state == "game_over":
-        font = pygame.font.SysFont(None, 72)
-        text = font.render("GAME OVER", True, RED)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-        screen.blit(text, text_rect)
-        
-        font = pygame.font.SysFont(None, 36)
-        text = font.render("Press ESC to quit", True, WHITE)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 50))
-        screen.blit(text, text_rect)
-    
+    if game_state == "playing":
+        render_walls()
+        render_enemies()
+        render_weapon()
+        render_power_ups()
+        render_hud()
+        render_minimap()
+    elif game_state == "game_over":
+        render_walls()  # Keep the 3D view visible
+        render_game_over()
     elif game_state == "win":
-        font = pygame.font.SysFont(None, 72)
-        text = font.render("YOU WIN!", True, GREEN)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-        screen.blit(text, text_rect)
-        
-        font = pygame.font.SysFont(None, 36)
-        text = font.render("Press ESC to quit", True, WHITE)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 50))
-        screen.blit(text, text_rect)
+        render_walls()
+        render_win_screen()
     
     # Flip the display
     pygame.display.flip()
